@@ -3,11 +3,41 @@
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
 
+vim.g.python3_host_prog = vim.fn.expand '~/.virtualenvs/neovim/bin/python3'
+
+vim.opt.termguicolors = true
+vim.opt.shiftwidth = 2
+vim.opt.tabstop = 2
+vim.opt.autoindent = true
+vim.opt.wrap = true
+vim.opt.smarttab = true
+vim.opt.smartindent = true
+vim.opt.cmdheight = 0
+vim.opt.laststatus = 0
+vim.opt.expandtab = true
+vim.opt.inccommand = 'split'
+vim.opt.backspace = { 'start', 'eol', 'indent' }
+vim.opt.wildignore:append { '*/node_modules/*', '*/.git/*', '*/.github/*' }
+
+-- vim.g.mellow_italic_functions = true
+-- vim.g.mellow_bold_functions = true
+--
+-- vim.g.mellow_highlight_overrides = {
+--   ['NormalNC'] = { link = 'Normal' },
+-- }
+
+vim.api.nvim_create_autocmd('FileType', {
+  pattern = '*',
+  callback = function()
+    vim.opt_local.formatoptions:remove { 'r', 'o' }
+  end,
+})
+
 -- Make line numbers default
-vim.opt.number = true
+-- vim.opt.number = true
 -- You can also add relative line numbers, to help with jumping.
 --  Experiment for yourself to see if you like it!
--- vim.opt.relativenumber = true
+vim.opt.relativenumber = true
 
 -- Enable mouse mode, can be useful for resizing splits for example!
 vim.opt.mouse = 'a'
@@ -49,8 +79,8 @@ vim.opt.splitbelow = true
 -- Sets how neovim will display certain whitespace characters in the editor.
 --  See `:help 'list'`
 --  and `:help 'listchars'`
-vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+-- vim.opt.list = true
+-- vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'

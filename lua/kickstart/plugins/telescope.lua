@@ -71,7 +71,10 @@ return {
 
       -- Enable Telescope extensions if they are installed
       pcall(require('telescope').load_extension, 'fzf')
+
       pcall(require('telescope').load_extension, 'ui-select')
+
+      pcall(require('telescope').load_extension, 'noice')
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
@@ -106,8 +109,12 @@ return {
 
       -- Shortcut for searching your Neovim configuration files
       vim.keymap.set('n', '<leader>sn', function()
-        builtin.find_files { cwd = vim.fn.stdpath 'config' }
+        builtin.fd { cwd = vim.fn.stdpath 'config' }
       end, { desc = '[S]earch [N]eovim files' })
+
+      vim.keymap.set('n', '<leader>sm', function()
+        builtin.fd { cwd = '/home/swooz/' }
+      end, { desc = '[S]earch [M]y Home files' })
     end,
   },
 }
