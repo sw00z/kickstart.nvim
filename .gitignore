@@ -5,3 +5,45 @@ nvim
 
 spell/
 lazy-lock.json
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Editors
+*.swp
+*.swo
+*.swx
+*~
+Session.vim
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Node
+node_modules/
+
+# Environments
+.venv/
+venv/
+
+# Env files
+.env
+.env.local
+.env.*
+
+# Build / cache
+dist/
+build/
+target/
+.coverage
+coverage/
+
+# Logs
+*.log
+
+# Tags
+TAGS
