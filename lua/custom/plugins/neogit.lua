@@ -20,6 +20,17 @@ return {
     },
   },
   config = function(_, opts)
-    vim.keymap.set('n', '<leader>Ns', '<cmd>Neogit kind=vsplit<CR>', { desc = 'Neogit Status' })
+    local neogit = require 'neogit'
+    local is_neogit_open = false
+
+    vim.keymap.set('n', '<leader>gn', function()
+      if is_neogit_open then
+        neogit.close()
+        is_neogit_open = false
+      else
+        neogit.open { kind = 'floating' }
+        is_neogit_open = true
+      end
+    end, { desc = 'Toggle Neogit' })
   end,
 }
