@@ -38,6 +38,78 @@ require('lazy').setup({
   --
   --
   -- Colorschemes
+  --
+  -- REMEMBER TO SET vim.cmd.colorscheme = 'whatever colorscheme you choose' in init.lua OR in the config section
+  --
+  {
+    'rose-pine/neovim',
+    name = 'rose-pine',
+    config = function()
+      vim.cmd 'colorscheme rose-pine'
+    end,
+  },
+  {
+    'ramojus/mellifluous.nvim',
+    enabled = false,
+    lazy = false,
+    priority = 1000,
+    opts = {
+      mellifluous = {
+        color_overrides = {
+          dark = {
+            bg = function(bg)
+              return bg:darkened(8)
+            end,
+            colors = function(colors)
+              return {
+                main_keywords = '#e0e066',
+                operators = colors.functions:saturated(8),
+              }
+            end,
+          },
+        },
+      },
+    },
+  },
+  {
+    'DonJulve/NeoCyberVim',
+    enabled = false,
+    lazy = false,
+    priority = 1000,
+    opts = {
+      transparent = false, -- Boolean: Sets the background to transparent
+      italics = {
+        comments = true, -- Boolean: Italicizes comments
+        keywords = true, -- Boolean: Italicizes keywords
+        functions = true, -- Boolean: Italicizes functions
+        strings = true, -- Boolean: Italicizes strings
+        variables = true, -- Boolean: Italicizes variables
+      },
+      overrides = {}, -- A dictionary of group names, can be a function returning a dictionary or a table.
+    },
+  },
+  {
+    'blazkowolf/gruber-darker.nvim',
+    enabled = false,
+    lazy = false,
+    priority = 1000,
+    opts = {
+      bold = true,
+      invert = {
+        signs = false,
+        tabline = false,
+        visual = false,
+      },
+      italic = {
+        strings = true,
+        comments = true,
+        operators = false,
+        folds = true,
+      },
+      undercurl = true,
+      underline = true,
+    },
+  },
   {
     'bakageddy/alduin.nvim',
     enabled = false,
@@ -92,7 +164,7 @@ require('lazy').setup({
   },
   {
     'Iron-E/nvim-highlite',
-    enabled = true,
+    enabled = false,
     lazy = false,
     priority = math.huge,
     config = function(_, opts)
