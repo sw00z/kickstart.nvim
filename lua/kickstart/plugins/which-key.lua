@@ -72,7 +72,7 @@ return {
         { '<leader>t', group = '[T]oggle' },
         { '<leader>h', group = '[H]arpoon', mode = { 'n', 'v' } },
         { '<leader>z', group = '[Z]oxide' },
-        { '<leader>N', group = '[N]eogit' },
+        -- { '<leader>N', group = '[N]eogit' },
         { '<leader>m', group = '[m]olten' },
         { '<leader>a', group = '[A]vante', mode = { 'n', 'v' } },
       },
