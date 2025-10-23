@@ -4,7 +4,7 @@ return {
   event = 'InsertEnter',
   -- below commented out, because above repo is supposed to be better
   -- 'github/copilot.vim',
-  enabled = true,
+  enabled = false,
   lazyload = false,
   config = function()
     require('copilot').setup {
