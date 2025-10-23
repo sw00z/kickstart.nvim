@@ -16,7 +16,7 @@ vim.keymap.set('n', '<localleader>ra', runner.run_above, { desc = 'run cell and 
 vim.keymap.set('n', '<localleader>rA', runner.run_all, { desc = 'run all cells', silent = true })
 vim.keymap.set('n', '<localleader>rl', runner.run_line, { desc = 'run line', silent = true })
 vim.keymap.set('v', '<localleader>r', runner.run_range, { desc = 'run visual range', silent = true })
-vim.keymap.set('n', '<localleader>RA', function()
+vim.keymap.set('n', '<localleader>rL', function()
   runner.run_all(true)
 end, { desc = 'run all cells of all languages', silent = true })
 
