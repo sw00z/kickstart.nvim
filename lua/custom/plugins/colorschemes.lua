@@ -205,4 +205,20 @@ return {
     'EdenEast/nightfox.nvim',
     lazy = true,
   },
+  {
+    'nyoom-engineering/oxocarbon.nvim',
+    lazy = true,
+    config = function()
+      -- Apply transparent-bg overrides only when oxocarbon is selected
+      vim.api.nvim_create_autocmd('ColorScheme', {
+        pattern = 'oxocarbon',
+        callback = function()
+          vim.opt.background = 'dark'
+          vim.api.nvim_set_hl(0, 'Normal', { bg = 'none' })
+          vim.api.nvim_set_hl(0, 'NormalFloat', { bg = 'none' })
+          vim.api.nvim_set_hl(0, 'NormalNC', { bg = 'none' })
+        end,
+      })
+    end,
+  },
 }
