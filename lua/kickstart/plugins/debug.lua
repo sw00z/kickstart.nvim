@@ -1,109 +1,65 @@
 -- debug.lua
 --
--- Shows how to use the DAP plugin to debug your code.
---
--- Primarily focused on configuring the debugger for Go, but can
--- be extended to other languages as well. That's why it's called
--- kickstart.nvim and not kitchen-sink.nvim ;)
+-- DAP (Debug Adapter Protocol) configuration.
+-- Uses mason-nvim-dap for automatic debugger installation.
 
 return {
-  -- NOTE: Yes, you can install new plugins here!
   'mfussenegger/nvim-dap',
-  -- NOTE: And you can specify dependencies as well
   dependencies = {
-    -- Creates a beautiful debugger UI
     'rcarriga/nvim-dap-ui',
-
-    -- Required dependency for nvim-dap-ui
     'nvim-neotest/nvim-nio',
-
-    -- Installs the debug adapters for you
     'williamboman/mason.nvim',
     'jay-babu/mason-nvim-dap.nvim',
-
-    -- Add your own debuggers here
+    'theHamsta/nvim-dap-virtual-text',
+    -- Language-specific helpers
     'leoluz/nvim-dap-go',
   },
   keys = {
-    -- Basic debugging keymaps, feel free to change to your liking!
-    {
-      '<F5>',
-      function()
-        require('dap').continue()
-      end,
-      desc = 'Debug: Start/Continue',
-    },
-    {
-      '<F1>',
-      function()
-        require('dap').step_into()
-      end,
-      desc = 'Debug: Step Into',
-    },
-    {
-      '<F2>',
-      function()
-        require('dap').step_over()
-      end,
-      desc = 'Debug: Step Over',
-    },
-    {
-      '<F3>',
-      function()
-        require('dap').step_out()
-      end,
-      desc = 'Debug: Step Out',
-    },
-    {
-      '<leader>b',
-      function()
-        require('dap').toggle_breakpoint()
-      end,
-      desc = 'Debug: Toggle Breakpoint',
-    },
-    {
-      '<leader>B',
-      function()
-        require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ')
-      end,
-      desc = 'Debug: Set Breakpoint',
-    },
-    -- Toggle to see last session result. Without this, you can't see session output in case of unhandled exception.
-    {
-      '<F7>',
-      function()
-        require('dapui').toggle()
-      end,
-      desc = 'Debug: See last session result.',
-    },
+    -- Function key shortcuts (muscle memory / VSCode-style)
+    { '<F5>', function() require('dap').continue() end, desc = 'Debug: Continue' },
+    { '<F10>', function() require('dap').step_over() end, desc = 'Debug: Step Over' },
+    { '<F11>', function() require('dap').step_into() end, desc = 'Debug: Step Into' },
+    { '<S-F11>', function() require('dap').step_out() end, desc = 'Debug: Step Out' },
+    -- <leader>d prefix
+    { '<leader>dc', function() require('dap').continue() end, desc = 'Continue' },
+    { '<leader>di', function() require('dap').step_into() end, desc = 'Step Into' },
+    { '<leader>do', function() require('dap').step_over() end, desc = 'Step Over' },
+    { '<leader>du', function() require('dap').step_out() end, desc = 'Step O[u]t' },
+    { '<leader>db', function() require('dap').toggle_breakpoint() end, desc = 'Toggle Breakpoint' },
+    { '<leader>dB', function() require('dap').set_breakpoint(vim.fn.input 'Breakpoint condition: ') end, desc = 'Conditional Breakpoint' },
+    { '<leader>dl', function() require('dap').set_breakpoint(nil, nil, vim.fn.input 'Log point message: ') end, desc = 'Log Point' },
+    { '<leader>dr', function() require('dap').repl.open() end, desc = 'Open REPL' },
+    { '<leader>ds', function() require('dap').run_last() end, desc = 'Run La[s]t' },
+    { '<leader>dt', function() require('dap').terminate() end, desc = 'Terminate' },
+    { '<leader>dd', function() require('dap').disconnect() end, desc = 'Disconnect' },
+    { '<leader>dw', function() require('dapui').toggle() end, desc = 'Toggle UI [w]indow' },
+    { '<leader>de', function() require('dapui').eval() end, desc = 'Eval under cursor', mode = { 'n', 'v' } },
+    { '<leader>df', function() require('dapui').float_element() end, desc = 'Float element' },
+    { '<leader>dp', function() require('dap').pause() end, desc = 'Pause' },
   },
   config = function()
     local dap = require 'dap'
     local dapui = require 'dapui'
 
+    -- Virtual text (inline variable values)
+    require('nvim-dap-virtual-text').setup {}
+
+    -- Mason-DAP: auto-install debuggers
     require('mason-nvim-dap').setup {
-      -- Makes a best effort to setup the various debuggers with
-      -- reasonable debug configurations
       automatic_installation = true,
-
-      -- You can provide additional configuration to the handlers,
-      -- see mason-nvim-dap README for more information
       handlers = {},
-
-      -- You'll need to check that you have the required things installed
-      -- online, please don't ask me how to install them :)
       ensure_installed = {
-        -- Update this to ensure that you have the debuggers for the langs you want
-        'delve',
+        'delve', -- Go
+        'python', -- Python (debugpy)
+        'node2', -- JavaScript/TypeScript
+        'cppdbg', -- C/C++
+        'codelldb', -- Rust / C / C++ (lldb)
+        'bash', -- Bash
       },
     }
 
-    -- Dap UI setup
-    -- For more information, see |:help nvim-dap-ui|
+    -- DAP UI
     dapui.setup {
-      -- Set icons to characters that are more likely to work in every terminal.
-      --    Feel free to remove or use ones that you like more! :)
-      --    Don't feel like these are good choices.
       icons = { expanded = '▾', collapsed = '▸', current_frame = '*' },
       controls = {
         icons = {
@@ -120,28 +76,119 @@ return {
       },
     }
 
-    -- Change breakpoint icons
-    -- vim.api.nvim_set_hl(0, 'DapBreak', { fg = '#e51400' })
-    -- vim.api.nvim_set_hl(0, 'DapStop', { fg = '#ffcc00' })
-    -- local breakpoint_icons = vim.g.have_nerd_font
-    --     and { Breakpoint = '', BreakpointCondition = '', BreakpointRejected = '', LogPoint = '', Stopped = '' }
-    --   or { Breakpoint = '●', BreakpointCondition = '⊜', BreakpointRejected = '⊘', LogPoint = '◆', Stopped = '⭔' }
-    -- for type, icon in pairs(breakpoint_icons) do
-    --   local tp = 'Dap' .. type
-    --   local hl = (type == 'Stopped') and 'DapStop' or 'DapBreak'
-    --   vim.fn.sign_define(tp, { text = icon, texthl = hl, numhl = hl })
-    -- end
-
+    -- Auto open/close UI on debug session
     dap.listeners.after.event_initialized['dapui_config'] = dapui.open
     dap.listeners.before.event_terminated['dapui_config'] = dapui.close
     dap.listeners.before.event_exited['dapui_config'] = dapui.close
 
-    -- Install golang specific config
+    -- =====================
+    -- Language Configurations
+    -- =====================
+
+    -- Go (via nvim-dap-go — handles adapter + configs)
     require('dap-go').setup {
       delve = {
-        -- On Windows delve must be run attached or it crashes.
-        -- See https://github.com/leoluz/nvim-dap-go/blob/main/README.md#configuring
         detached = vim.fn.has 'win32' == 0,
+      },
+    }
+
+    -- Python (debugpy — venv-aware)
+    dap.configurations.python = {
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch file',
+        program = '${file}',
+        pythonPath = function()
+          local cwd = vim.fn.getcwd()
+          local venv = os.getenv 'VIRTUAL_ENV' or os.getenv 'CONDA_PREFIX'
+          if venv then
+            return venv .. '/bin/python'
+          elseif vim.fn.executable(cwd .. '/.venv/bin/python') == 1 then
+            return cwd .. '/.venv/bin/python'
+          elseif vim.fn.executable(cwd .. '/venv/bin/python') == 1 then
+            return cwd .. '/venv/bin/python'
+          else
+            return 'python3'
+          end
+        end,
+      },
+      {
+        type = 'python',
+        request = 'launch',
+        name = 'Launch file with args',
+        program = '${file}',
+        args = function()
+          return vim.split(vim.fn.input 'Arguments: ', ' ')
+        end,
+        pythonPath = function()
+          local venv = os.getenv 'VIRTUAL_ENV' or os.getenv 'CONDA_PREFIX'
+          if venv then
+            return venv .. '/bin/python'
+          end
+          return 'python3'
+        end,
+      },
+    }
+
+    -- C/C++ (cppdbg)
+    dap.configurations.c = {
+      {
+        name = 'Launch file',
+        type = 'cppdbg',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopAtEntry = false,
+      },
+    }
+    dap.configurations.cpp = dap.configurations.c
+
+    -- Rust (codelldb)
+    dap.configurations.rust = {
+      {
+        name = 'Launch file',
+        type = 'codelldb',
+        request = 'launch',
+        program = function()
+          return vim.fn.input('Path to executable: ', vim.fn.getcwd() .. '/target/debug/', 'file')
+        end,
+        cwd = '${workspaceFolder}',
+        stopOnEntry = false,
+      },
+    }
+
+    -- JavaScript / TypeScript (node2)
+    dap.configurations.javascript = {
+      {
+        name = 'Launch file',
+        type = 'node2',
+        request = 'launch',
+        program = '${file}',
+        cwd = '${workspaceFolder}',
+        sourceMaps = true,
+        protocol = 'inspector',
+        console = 'integratedTerminal',
+      },
+      {
+        name = 'Attach to process',
+        type = 'node2',
+        request = 'attach',
+        processId = require('dap.utils').pick_process,
+      },
+    }
+    dap.configurations.typescript = dap.configurations.javascript
+
+    -- Bash (bashdb)
+    dap.configurations.sh = {
+      {
+        name = 'Launch file',
+        type = 'bash',
+        request = 'launch',
+        program = '${file}',
+        cwd = '${workspaceFolder}',
       },
     }
   end,
