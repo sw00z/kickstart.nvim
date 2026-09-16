@@ -14,21 +14,17 @@ return {
       },
     },
     opts = {
-      notify_on_error = false,
+      -- Surface formatter failures (binary missing, timeout, parse error).
+      -- Without this, your file silently stays unformatted and you can't tell
+      -- why — the formatter is the canonical indent source, so failures matter.
+      notify_on_error = true,
       format_on_save = function(bufnr)
-        -- Disable "format_on_save lsp_fallback" for languages that don't
-        -- have a well standardized coding style. You can add additional
-        -- languages here or re-enable it for the disabled ones.
-        local disable_filetypes = { c = true, cpp = true }
-        local lsp_format_opt
-        if disable_filetypes[vim.bo[bufnr].filetype] then
-          lsp_format_opt = 'never'
-        else
-          lsp_format_opt = 'fallback'
-        end
+        require('custom.lsp_tools').eslint_fix(bufnr)
         return {
-          timeout_ms = 500,
-          lsp_format = lsp_format_opt,
+          -- 1500ms covers cold-start formatters (zig fmt, prettierd boot,
+          -- swiftformat first run). 500ms was too tight on first invocation.
+          timeout_ms = 1500,
+          lsp_format = 'fallback',
         }
       end,
       formatters_by_ft = {
@@ -38,7 +34,9 @@ return {
         --
         c = { 'clang-format' },
         cpp = { 'clang-format' },
-        go = { 'goimports', 'gofmt' },
+        -- gofumpt (superset of gofmt) matches gopls' `gofumpt = true`, so
+        -- conform-on-save and LSP fallback formatting produce identical output.
+        go = { 'goimports', 'gofumpt' },
         rust = { 'rustfmt', lsp_format = 'fallback' },
         zig = { 'zigfmt' },
         odin = { 'odinfmt' },
@@ -63,25 +61,14 @@ return {
         swift = { 'swiftformat' }, -- swiftformat: brew install swiftformat (or apt)
       },
       formatters = {
-        prettierd = {
-          -- Only use fallback config if no project config exists
+        prettier = {
           prepend_args = function(self, ctx)
-            -- Check if project has a prettier config
-            local has_config = vim.fs.find({
-              '.prettierrc',
-              '.prettierrc.json',
-              '.prettierrc.yml',
-              '.prettierrc.yaml',
-              '.prettierrc.js',
-              'prettier.config.js',
-              '.prettierrc.toml',
-            }, { upward = true, path = ctx.dirname })[1]
-
-            if has_config then
-              return {}
-            end
-            -- Fallback to your global config
-            return { '--config', vim.fn.expand '~/.config/prettier/.prettierrc' }
+            return require('custom.lsp_tools').prettier_args(self, ctx)
+          end,
+        },
+        prettierd = {
+          env = function()
+            return require('custom.lsp_tools').prettierd_env()
           end,
         },
       },
