@@ -11,6 +11,9 @@ vim.opt.expandtab = true
 vim.opt.smartindent = true
 
 -- Display
+-- 24-bit color, set before plugins load so colorschemes never apply under the
+-- cterm fallback (tmux delays Neovim's async termguicolors auto-enable).
+vim.opt.termguicolors = true
 vim.opt.number = true
 vim.opt.relativenumber = true
 vim.opt.cursorline = true
