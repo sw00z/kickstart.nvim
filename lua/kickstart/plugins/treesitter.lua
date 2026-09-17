@@ -53,6 +53,8 @@ return {
         -- DB / data
         'prisma',
         'sql',
+        -- HTTP client (hurl.nvim)
+        'hurl',
         -- Misc
         'regex',
         -- New languages (Phase 4)
