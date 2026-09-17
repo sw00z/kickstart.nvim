@@ -1,5 +1,7 @@
 return {
   'gutsavgupta/nvim-gemini-companion',
+
+  enabled = false,
   dependencies = { 'nvim-lua/plenary.nvim' },
   event = 'VeryLazy',
   cmds = { 'gemini' },
