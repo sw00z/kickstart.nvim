@@ -299,6 +299,21 @@ vim.keymap.set('n', '<C-w>n', ':tabNext<CR>', { desc = 'Move focus to the next w
 vim.keymap.set('n', '<C-w>X', ':tabclose<CR>', { desc = 'close the window tab' })
 vim.keymap.set('n', '<C-w>N', ':tabnew<CR>', { desc = 'Create new window tab' })
 
+-- Window "Hydra" loop: <C-w><Space> opens which-key over the <C-w> submode with
+-- loop = true, so resize (+ - < >), equalize (=), split, and navigation keys
+-- repeat without re-pressing the prefix. <Esc> breaks the loop. which-key has
+-- this built in — no separate Hydra plugin needed.
+vim.keymap.set('n', '<C-w><Space>', function()
+  require('which-key').show { keys = '<C-w>', loop = true }
+end, { desc = 'Window Hydra Mode' })
+
+-- Run the current file as a program; output docks in the edgy bottom panel
+-- (implementation in lua/custom/run.lua). Running a file is a code action, not a
+-- test, so it sits in the [C]ode which-key group: <leader>cr.
+vim.keymap.set('n', '<leader>cr', function()
+  require('custom.run').run_file()
+end, { desc = 'Run file (program output)' })
+
 -- [[ Basic Autocommands ]]
 --  See `:help lua-guide-autocommands`
 
