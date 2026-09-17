@@ -53,15 +53,18 @@ return {
       -- [[ Configure Telescope ]]
       -- See `:help telescope` and `:help telescope.setup()`
       require('telescope').setup {
-        -- You can put your default mappings / updates / etc. in here
-        --  All the info you're looking for is in `:help telescope.setup()`
-        --
-        -- defaults = {
-        --   mappings = {
-        --     i = { ['<c-enter>'] = 'to_fuzzy_refine' },
-        --   },
-        -- },
-        -- pickers = {}
+        defaults = {
+          -- `flex` flips between a side-by-side preview (wide UI) and a preview
+          -- BELOW the results (narrow UI). Below flip_columns the preview drops
+          -- under the list, so a small window no longer crushes the previewer into
+          -- the invalid-window E5108 error.
+          layout_strategy = 'flex',
+          layout_config = {
+            flex = { flip_columns = 130 }, -- < 130 cols → vertical (preview below)
+            horizontal = { preview_width = 0.55 },
+            vertical = { preview_height = 0.5 },
+          },
+        },
         extensions = {
           ['ui-select'] = {
             require('telescope.themes').get_dropdown(),
