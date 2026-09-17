@@ -7,7 +7,11 @@ return {
     'nvim-treesitter/nvim-treesitter',
     -- Adapters
     'nvim-neotest/neotest-python', -- pytest / unittest
-    'fredrikaverpil/neotest-golang', -- go test
+    -- Pinned: v2+ queries reference the `statement_list` node, which only the
+    -- nvim-treesitter `main`-branch go grammar exposes. This config is on the
+    -- frozen `master` branch (hidden `_statement_list`), so v1.15.1 is the last
+    -- release whose discovery query compiles against the installed parser.
+    { 'fredrikaverpil/neotest-golang', version = 'v1.15.1' }, -- go test
     'marilari88/neotest-vitest', -- vitest
     'haydenmeade/neotest-jest', -- jest
     'arthur944/neotest-bun', -- bun test
@@ -88,7 +92,7 @@ return {
           jestCommand = 'npx jest',
         },
         require 'neotest-bun',
-        require 'neotest-playwright'.adapter {
+        require('neotest-playwright').adapter {
           options = {
             persist_project_selection = true,
             enable_dynamic_test_discovery = true,
