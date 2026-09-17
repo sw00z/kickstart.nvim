@@ -1,0 +1,83 @@
+[
+  // Copy to <project>/.vim/projector.json — loaded by nvim-projector.
+  // Only whole-line // comments are allowed. Variables: ${file},
+  // ${relativeFile}, ${fileBasenameNoExtension}, ${workspaceFolder}, ...
+  // "dependencies": task ids to run before (vscode preLaunchTask).
+  // "after": task id to run on success after (vscode postDebugTask).
+  // Ids must be unique across this file AND the global configs defined
+  // in custom/plugins/projector.lua (duplicates silently shadow).
+  // Compilers are absolute paths; -g keeps DWARF readable by lldb and gdb.
+
+  // ── single translation unit ──────────────────────────────────────
+  // NOTE: ${relativeFile}/${fileBasenameNoExtension} expand against the
+  // FOCUSED buffer when the task runs — if a dap-ui window is focused on a
+  // re-run, the path resolves to a UI buffer name and the build fails. For
+  // ad-hoc single files prefer <leader>da or the global dashboard "Build &
+  // debug current <lang> file" entries (they pin the source buffer). Use
+  // this projector.json for project builds with FIXED program paths below,
+  // or hardcode the filename here if it never changes.
+  {
+    "id": "compile",
+    "name": "Compile (clang++)",
+    "command": "/usr/bin/clang++-21",
+    "args": ["-std=c++23", "-g", "-fstandalone-debug", "${relativeFile}", "-o", "${fileBasenameNoExtension}"],
+    "cwd": "${workspaceFolder}"
+  },
+  // swap "dependencies" below to "compile-gcc" to build with g++ instead
+  {
+    "id": "compile-gcc",
+    "name": "Compile (g++)",
+    "command": "/usr/bin/g++-15",
+    "args": ["-std=c++23", "-g", "${relativeFile}", "-o", "${fileBasenameNoExtension}"],
+    "cwd": "${workspaceFolder}"
+  },
+  {
+    "id": "clean",
+    "name": "Clean",
+    "command": "rm",
+    "args": ["-f", "${fileBasenameNoExtension}"],
+    "cwd": "${workspaceFolder}"
+  },
+  {
+    "id": "debug-stdin",
+    "name": "C++ (stdin from input.txt)",
+    "type": "codelldb",
+    "request": "launch",
+    "program": "${workspaceFolder}/${fileBasenameNoExtension}",
+    "cwd": "${workspaceFolder}",
+    "stdio": ["input.txt", null],
+    "dependencies": ["compile"],
+    "after": "clean"
+  },
+
+  // ── whole project — adjust build command and binary path ─────────
+  {
+    "id": "build",
+    "name": "Build project",
+    "command": "cmake",
+    "args": ["--build", "build"],
+    "cwd": "${workspaceFolder}"
+  },
+  {
+    "id": "debug-project",
+    "name": "Build & debug project binary",
+    "type": "codelldb",
+    "request": "launch",
+    "program": "${workspaceFolder}/build/myapp",
+    "args": [],
+    "cwd": "${workspaceFolder}",
+    "dependencies": ["build"]
+  },
+  // Attaches by executable BASENAME (lldb `process attach` semantics):
+  // a same-named binary elsewhere would also match. Works on a running
+  // instance, or with waitFor waits for the next one to start. Requires
+  // kernel.yama.ptrace_scope=0 for processes nvim didn't spawn.
+  {
+    "id": "attach-project",
+    "name": "Attach to running project binary",
+    "type": "codelldb",
+    "request": "attach",
+    "program": "${workspaceFolder}/build/myapp",
+    "waitFor": true
+  }
+]
