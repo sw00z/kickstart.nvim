@@ -52,8 +52,7 @@ return {
       -- lint.linters_by_ft['terraform'] = nil
       -- lint.linters_by_ft['text'] = nil
 
-      -- Create autocommand which carries out the actual linting
-      -- on the specified events.
+      -- Lint on save only; <leader>f (conform.lua) runs :Lint after formatting.
       local lint_augroup = vim.api.nvim_create_augroup('lint', { clear = true })
       local go_processes = {}
       local function run_go(bufnr)
@@ -76,14 +75,14 @@ return {
           vim.notify('Go lint failed: ' .. tostring(proc), vim.log.levels.WARN)
         end
       end
-      vim.api.nvim_create_autocmd({ 'BufEnter', 'BufWritePost', 'InsertLeave' }, {
+      vim.api.nvim_create_autocmd('BufWritePost', {
         group = lint_augroup,
         callback = function(event)
           -- Only run the linter in buffers that you can modify in order to
           -- avoid superfluous noise, notably within the handy LSP pop-ups that
           -- describe the hovered symbol using Markdown.
           if vim.bo[event.buf].filetype == 'go' then
-            if event.event ~= 'BufWritePost' or require('custom.lsp_profiles').for_buffer(event.buf) == 'balanced' then
+            if require('custom.lsp_profiles').for_buffer(event.buf) == 'balanced' then
               return
             end
             if vim.bo[event.buf].modifiable and vim.bo[event.buf].buftype == '' then
