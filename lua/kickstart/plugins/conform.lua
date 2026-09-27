@@ -7,10 +7,18 @@ return {
       {
         '<leader>f',
         function()
-          require('conform').format { async = true, lsp_format = 'fallback' }
+          local bufnr = vim.api.nvim_get_current_buf()
+          -- Linters otherwise run only on save; lint even when formatting fails, e.g. on a syntax error.
+          require('conform').format({ async = true, lsp_format = 'fallback' }, function()
+            if vim.api.nvim_buf_is_valid(bufnr) then
+              vim.api.nvim_buf_call(bufnr, function()
+                vim.cmd.Lint()
+              end)
+            end
+          end)
         end,
         mode = '',
-        desc = '[F]ormat buffer',
+        desc = '[F]ormat and lint buffer',
       },
     },
     opts = {

@@ -393,6 +393,21 @@ return {
             },
           },
         },
+        -- Python semantic server. Hover under completion load: 31-267 ms vs pyright's 236-897 ms.
+        ty = {
+          -- client.settings aliases this table before before_init runs; mutate it, never replace it.
+          -- No `ty` key by default: an empty table encodes as a JSON array, which ty rejects.
+          settings = {},
+          -- ty prefers VIRTUAL_ENV over <root>/.venv, so a venv activated for another project would win.
+          before_init = function(_, config)
+            local active = vim.env.VIRTUAL_ENV
+            local venv = config.root_dir and vim.fs.joinpath(config.root_dir, '.venv')
+            if active and venv and vim.fs.normalize(active) ~= venv and vim.fn.executable(venv .. '/bin/python') == 1 then
+              config.settings.ty = { configuration = { environment = { python = venv } } }
+            end
+          end,
+        },
+        -- Opt-in fallback (`:LspStart pyright`); excluded from automatic_enable below.
         pyright = {
           settings = {
             python = {
@@ -401,12 +416,6 @@ return {
                 autoSearchPaths = true,
                 useLibraryCodeForTypes = true,
                 diagnosticMode = 'openFilesOnly',
-                inlayHints = {
-                  callArgumentNames = 'all', -- param names at call sites (string enum, not bool)
-                  variableTypes = true,
-                  functionReturnTypes = true,
-                  pytestParameters = true,
-                },
               },
             },
           },
@@ -640,8 +649,9 @@ return {
         ensure_installed = {}, -- mason-tool-installer drives installs
         -- Default-on: every Mason-installed server is enabled. Declared servers
         -- use our config above; the rest fall back to nvim-lspconfig defaults
-        -- plus the shared capabilities.
-        automatic_enable = true,
+        -- plus the shared capabilities. Excluded servers stay installed for `:LspStart`: K waits for
+        -- every hover-capable client, and ruff lints through nvim-lint on save, not per keystroke.
+        automatic_enable = { exclude = { 'pylsp', 'pyright', 'ruff' } },
       }
 
       -- Mason only auto-enables its own packages. System/toolchain-installed
