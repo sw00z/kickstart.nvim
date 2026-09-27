@@ -1,12 +1,65 @@
--- Aerial: a navigable, foldable symbol outline backed by treesitter + LSP.
+-- Aerial: a navigable symbol outline backed by treesitter + LSP.
 --
 -- Sits alongside plugins this config already runs, each with a distinct job:
 --   dropbar.nvim  → winbar breadcrumbs  (where the cursor is in the tree)
 --   trouble.nvim  → flat symbol list     (<leader>xs)
---   aerial.nvim   → persistent outline panel + symbol-tree code folding
+--   aerial.nvim   → persistent outline panel + symbol-kind fold selection
+--   nvim-ufo      → the folds themselves (custom/plugins/ufo.lua)
 --
 -- Backends fall through treesitter → lsp → markdown → asciidoc → man, so the
 -- outline populates in any buffer that has a parser or an attached server.
+
+-- zc closes the innermost open fold on a line. A multi-line signature adds a fold that
+-- starts on the symbol's first line, so close outward until the fold covers the symbol.
+local function close_symbol_fold(lnum, end_lnum)
+  local fn = vim.fn
+  while fn.foldclosedend(lnum) < end_lnum do
+    local covered = fn.foldclosedend(lnum)
+    vim.cmd(('silent! %dfoldclose'):format(lnum))
+    local start = fn.foldclosed(lnum)
+    if start ~= lnum then
+      -- start > 0: the close reached a fold that begins above the symbol, so undo it.
+      if start > 0 then
+        vim.cmd(('silent! %dfoldopen'):format(lnum))
+      end
+      return
+    end
+    if fn.foldclosedend(lnum) == covered then
+      return
+    end
+  end
+end
+
+-- Aerial normalizes symbol kinds across languages, so one kind list selects the same
+-- folds in Python, C++, Lua and TypeScript.
+local callable_kinds = { Function = true, Method = true, Constructor = true }
+
+local function fold_callables()
+  -- aerial defers setup until its first command runs; sync_load runs it and attaches a backend.
+  require('aerial').sync_load()
+  local aerial_data = require 'aerial.data'
+  -- The first symbol fetch is throttled onto the event loop, so wait for it.
+  vim.wait(1000, function()
+    return aerial_data.has_received_data()
+  end, 20)
+  local data = aerial_data.get()
+  if not data then
+    vim.notify('Aerial has no symbols for this buffer', vim.log.levels.WARN)
+    return
+  end
+  local symbols = {}
+  for _, item in data:iter { skip_hidden = false } do
+    if callable_kinds[item.kind] then
+      table.insert(symbols, item)
+    end
+  end
+  vim.cmd 'silent! %foldopen!'
+  -- flat_items is pre-order, so reverse order closes nested functions before their parents.
+  for i = #symbols, 1, -1 do
+    close_symbol_fold(symbols[i].lnum, symbols[i].end_lnum)
+  end
+end
+
 return {
   'stevearc/aerial.nvim',
   -- aerial's default branch requires Neovim 0.12+ (its setup() early-returns and
@@ -18,13 +71,12 @@ return {
     'nvim-treesitter/nvim-treesitter', -- structural backend (works without LSP)
     'nvim-tree/nvim-web-devicons', -- kind icons in the tree
   },
-  -- Load once, just after the UI paints. setup() with manage_folds = true then
-  -- registers autocmds that arm folding on every supported buffer from here on,
-  -- so folds work without first opening the panel.
+  -- Load just after the UI paints so :AerialOpen exists when edgy opens its Outline slot.
   event = 'VeryLazy',
   keys = {
     { '<leader>vv', '<cmd>AerialToggle<CR>', desc = 'Toggle outline (Aerial)' },
     { '<leader>vn', '<cmd>AerialNavToggle<CR>', desc = 'Nav popup (Aerial)' },
+    { '<leader>vz', fold_callables, desc = 'Fold function bodies (Aerial)' },
     {
       '<leader>vf',
       function()
@@ -97,12 +149,9 @@ return {
     -- its pinned Outline slot (open = 'AerialOpen') when you press <leader>e.
     attach_mode = 'global',
 
-    -- ── Code folding driven by the symbol tree ────────────────────────────
-    -- manage_folds lets aerial own foldmethod/foldexpr for supported buffers;
-    -- collapsing a node in the tree folds the matching code region.
-    manage_folds = true,
-    link_tree_to_folds = true, -- fold/expand in the tree  → fold/expand the code
-    link_folds_to_tree = false, -- manual code folds do NOT reshape the tree
+    -- nvim-ufo owns folds and forces foldmethod=manual; 'auto' would hand manual
+    -- buffers back to aerial's foldexpr. The link_* options need manage_folds.
+    manage_folds = false,
 
     -- ── Window navigation inside the outline ──────────────────────────────
     -- aerial binds <C-j>/<C-k> buffer-locally (down_and_scroll/up_and_scroll),
@@ -116,11 +165,4 @@ return {
       ['<C-k>'] = false,
     },
   },
-  config = function(_, opts)
-    require('aerial').setup(opts)
-    -- Open files fully expanded; aerial-managed folds are then closed/opened on
-    -- demand with native za/zo/zc/zR/zM or directly from the outline panel.
-    vim.opt.foldlevel = 99
-    vim.opt.foldlevelstart = 99
-  end,
 }
