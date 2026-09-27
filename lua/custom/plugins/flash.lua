@@ -1,8 +1,9 @@
 return {
   'folke/flash.nvim',
   event = 'VeryLazy',
+  -- nvim-fFHighlight owns f/F; char mode would also remap t/T/;/, over it.
   ---@type Flash.Config
-  opts = {},
+  opts = { modes = { char = { enabled = false } } },
   -- stylua: ignore
   keys = {
     { "s", mode = { "n", "x", "o" }, function() require("flash").jump() end, desc = "Flash" },

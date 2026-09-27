@@ -396,8 +396,8 @@ return {
         -- Python semantic server. Hover under completion load: 31-267 ms vs pyright's 236-897 ms.
         ty = {
           -- client.settings aliases this table before before_init runs; mutate it, never replace it.
-          -- No `ty` key by default: an empty table encodes as a JSON array, which ty rejects.
-          settings = {},
+          -- empty_dict encodes as {} rather than []; ty rejects an array where it expects an object.
+          settings = vim.empty_dict(),
           -- ty prefers VIRTUAL_ENV over <root>/.venv, so a venv activated for another project would win.
           before_init = function(_, config)
             local active = vim.env.VIRTUAL_ENV
