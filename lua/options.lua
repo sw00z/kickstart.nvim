@@ -63,6 +63,7 @@ vim.opt.shortmess:append 'sI'
 -- so reads share one call until the event loop runs again.
 local clip_read -- clipboard contents for the current event-loop tick
 local clip_written -- last copy from Neovim; a matching read returns its regtype, like the builtin provider
+local clip_warned
 
 local function clip_copy(lines, regtype)
   vim.fn.systemlist({ 'win32yank.exe', '-i', '--crlf' }, lines, 1)
@@ -74,6 +75,11 @@ local function clip_paste()
   if not clip_read then
     local lines = vim.fn.systemlist({ 'win32yank.exe', '-o', '--lf' }, { '' }, 1)
     if vim.v.shell_error ~= 0 then
+      -- Warn once like the builtin provider; 0 tells Neovim the failure is already reported.
+      if not clip_warned then
+        clip_warned = true
+        vim.notify('clipboard: win32yank.exe failed: ' .. (lines[1] or vim.v.shell_error), vim.log.levels.WARN)
+      end
       return 0
     end
     clip_read = (clip_written and vim.deep_equal(clip_written[1], lines)) and clip_written or lines

@@ -36,7 +36,11 @@ local function put(type)
     local register, count = vim.v.register, vim.v.count1
     -- Named registers, macros and read-only buffers keep the native put; a picker would stall macro replay.
     if register ~= require('yanky.utils').get_default_register() or vim.fn.reg_recording() ~= '' or vim.fn.reg_executing() ~= '' or not vim.bo.modifiable then
-      vim.cmd.normal { ('"%s%d%s'):format(register, count, type), bang = true }
+      -- pcall: report put errors (E21 read-only, E353 empty register) as native messages, not a Lua traceback.
+      local ok, err = pcall(vim.cmd.normal, { ('"%s%d%s'):format(register, count, type), bang = true })
+      if not ok then
+        vim.api.nvim_echo({ { err:match 'E%d+:.*' or err } }, true, { err = true })
+      end
       return
     end
     push_clipboard()
