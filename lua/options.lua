@@ -90,12 +90,17 @@ local function clip_paste()
   return clip_read
 end
 
-vim.g.clipboard = {
-  name = 'win32yank',
-  copy = { ['+'] = clip_copy, ['*'] = clip_copy },
-  paste = { ['+'] = clip_paste, ['*'] = clip_paste },
-  cache_enabled = 0,
-}
+if vim.g.vscode then
+  -- vscode-neovim's provider reads and writes the VS Code clipboard.
+  vim.g.clipboard = vim.g.vscode_clipboard
+else
+  vim.g.clipboard = {
+    name = 'win32yank',
+    copy = { ['+'] = clip_copy, ['*'] = clip_copy },
+    paste = { ['+'] = clip_paste, ['*'] = clip_paste },
+    cache_enabled = 0,
+  }
+end
 vim.schedule(function()
   vim.opt.clipboard = 'unnamedplus'
 end)
