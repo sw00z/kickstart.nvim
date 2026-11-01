@@ -12,6 +12,11 @@ return {
 
       -- Surround handled by vim-surround (custom/plugins/surround.lua) for ys/cs/ds keymaps
 
+      -- VS Code renders the cursor and indent guides; these modules only draw on Neovim's own grid.
+      if vim.g.vscode then
+        return
+      end
+
       -- Smooth animations for cursor movement and scroll
       require('mini.animate').setup {
         cursor = { timing = require('mini.animate').gen_timing.linear { duration = 80, unit = 'total' } },
