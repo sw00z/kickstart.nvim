@@ -27,6 +27,7 @@ for _, lhs in ipairs { ' sf', ' sw', 'gra', '<Esc>', ' f' } do
   local map = vim.fn.maparg(lhs, 'n', false, true)
   maps[lhs] = map.desc or map.rhs or false
 end
+maps['x gra'] = vim.fn.maparg('gra', 'x', false, true).desc or false
 local out = {
   plugins = plugins,
   clipboard = vim.g.clipboard and vim.g.clipboard.name,
@@ -80,6 +81,7 @@ check('vscode keymaps replace plugin keymaps', function()
     [' sf'] = '[S]earch [F]iles',
     [' sw'] = '[S]earch current [W]ord',
     gra = 'LSP: Code [A]ction',
+    ['x gra'] = 'LSP: Code [A]ction',
     ['<Esc>'] = '<cmd>nohlsearch<CR>',
     [' f'] = '[F]ormat buffer',
   })

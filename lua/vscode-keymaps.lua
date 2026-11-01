@@ -22,13 +22,14 @@ local maps = {
   { '<leader><leader>', 'workbench.action.showAllEditors', '[ ] Find open editors' },
   { '<leader>/', 'actions.find', '[/] Find in current file' },
   { '<leader>f', 'editor.action.formatDocument', '[F]ormat buffer' },
-  -- grn/grr/gri defaults already reach VS Code through vscode-neovim's vim.lsp.buf shim;
-  -- its code_action maps to source actions, so gra targets quick fixes directly.
-  { 'gra', 'editor.action.quickFix', 'LSP: Code [A]ction' },
 }
 for _, map in ipairs(maps) do
   vim.keymap.set('n', map[1], action(map[2]), { desc = map[3] })
 end
+
+-- grn/grr/gri defaults already reach VS Code through vscode-neovim's vim.lsp.buf shim;
+-- its code_action maps to source actions, so gra (Normal and Visual, like the default) targets quick fixes.
+vim.keymap.set({ 'n', 'x' }, 'gra', action 'editor.action.quickFix', { desc = 'LSP: Code [A]ction' })
 
 vim.keymap.set('n', '<leader>sw', function()
   action('workbench.action.findInFiles', { query = vim.fn.expand '<cword>' })()
