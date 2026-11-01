@@ -50,7 +50,12 @@ require 'lazy-bootstrap'
 require 'lazy-plugins'
 
 -- [[ Basic Keymaps ]]
-require 'keymaps'
+-- keymaps.lua requires disabled plugins (quarto, telescope) under vscode-neovim.
+if vim.g.vscode then
+  require 'vscode-keymaps'
+else
+  require 'keymaps'
+end
 
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
