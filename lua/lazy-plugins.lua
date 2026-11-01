@@ -8,6 +8,10 @@
 --  To update plugins you can run
 --    :Lazy update
 
+-- Under vscode-neovim, VS Code owns UI, LSP and completion; only these editing plugins load.
+-- Specs with their own `cond` bypass `defaults.cond` and must check `vim.g.vscode` themselves.
+local vscode_plugins = { ['mini.nvim'] = true, ['flash.nvim'] = true, ['vim-surround'] = true }
+
 require('lazy').setup({
   -- Plain string specs (no extra config)
   'tpope/vim-dadbod', -- Database interaction
@@ -46,6 +50,11 @@ require('lazy').setup({
   -- Add new plugins by dropping a file in that directory.
   { import = 'custom.plugins' },
 }, {
+  defaults = {
+    cond = function(plugin)
+      return not vim.g.vscode or vscode_plugins[plugin.name] == true
+    end,
+  },
   ui = {
     icons = vim.g.have_nerd_font and {} or {
       cmd = '⌘',

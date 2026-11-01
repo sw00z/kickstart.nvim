@@ -3,7 +3,8 @@ return {
   -- Load only outside a herdr session (tmux or bare nvim). Inside herdr,
   -- herdr-splits.nvim owns <C-h/j/k/l> instead (see herdr-splits.lua). Both bind
   -- the same keys, so HERDR_ENV keeps them mutually exclusive per session.
-  cond = vim.env.HERDR_ENV ~= '1',
+  -- VS Code owns window navigation under vscode-neovim.
+  cond = vim.env.HERDR_ENV ~= '1' and not vim.g.vscode,
   cmd = {
     'TmuxNavigateLeft',
     'TmuxNavigateDown',

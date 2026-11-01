@@ -7,7 +7,7 @@
 -- ctrl/alt+hjkl bindings in ~/.config/herdr/config.toml.
 return {
   'lmilojevicc/herdr-splits.nvim',
-  cond = vim.env.HERDR_ENV == '1',
+  cond = vim.env.HERDR_ENV == '1' and not vim.g.vscode,
   event = 'VeryLazy',
   build = 'lua require("herdr-splits").sync_herdr()',
   config = function()
